@@ -17,10 +17,10 @@ dplyr::rename(TissueType = `Tissue Type`)
 
 table_simplified_ext <- table_simplified |> 
   dplyr::select(-c(`Injection order`, `Sample Name...4`, `Sample Name...117`)) |>
-  dplyr::mutate(ZT = as.numeric(ZT)) |> 
-  bind_rows(table_simplified |> 
-      dplyr::filter(ZT == 0) |> 
-      dplyr::mutate(ZT = 24))
+  dplyr::mutate(ZT = as.numeric(ZT)) #|> 
+  #bind_rows(table_simplified |> 
+      #dplyr::filter(ZT == 0) |> 
+      #dplyr::mutate(ZT = 24))
 
 # remove d4, d5, and some samples column and the ISF 
 table_simplified_red <- table_simplified_ext |> 
@@ -139,19 +139,22 @@ df_norm <- df_aa_summary_long |>
 df_norm_GI_organs <- df_aa_summary_long |> 
   dplyr::filter(TissueType %in% c("Cecum", "Colon", "Duodenum", "Ileum", "Jejunum")) |>
   group_by(TissueType, Metabolite) |> 
-  dplyr::mutate(RelAbundance_norm = Abundance / max(Abundance, na.rm = TRUE) * 100) |> 
+  dplyr::mutate(RelAbundance_norm = Abundance / max(Abundance, na.rm = TRUE) * 100, 
+                RelAbundance_norm = if_else(is.nan(RelAbundance_norm), 0, RelAbundance_norm)) |> 
   ungroup()
 
 df_norm_distal_organ <- df_aa_summary_long |> 
   dplyr::filter(TissueType %in% c("Blood", "Heart", "Eye", "Brain", "Kidney", "Liver", "Lung", "Skin", "Spleen", "Stomach")) |>
   group_by(TissueType, Metabolite) |> 
-  dplyr::mutate(RelAbundance_norm = Abundance / max(Abundance, na.rm = TRUE) * 100) |> 
+  dplyr::mutate(RelAbundance_norm = Abundance / max(Abundance, na.rm = TRUE) * 100, 
+                RelAbundance_norm = if_else(is.nan(RelAbundance_norm), 0, RelAbundance_norm)) |> 
   ungroup()
 
 df_norm_contents <- df_aa_summary_long |> 
   dplyr::filter(str_detect(TissueType, "Conts|Cont") | TissueType %in% c("Urine", "Feces")) |>
   group_by(TissueType, Metabolite) |> 
-  dplyr::mutate(RelAbundance_norm = Abundance / max(Abundance, na.rm = TRUE) * 100) |> 
+  dplyr::mutate(RelAbundance_norm = Abundance / max(Abundance, na.rm = TRUE) * 100,
+                RelAbundance_norm = if_else(is.nan(RelAbundance_norm), 0, RelAbundance_norm)) |> 
   ungroup()
 
 GI_cols <- c(
@@ -229,7 +232,7 @@ df_norm_GI_organs_plot <- ggplot() +
   geom_line(data = df_spline_norm_GI_organs, aes(ZT, RelAbundance_norm, color = TissueType, group = TissueType), linewidth = 1, alpha = 0.8) +
   geom_point(data = df_norm_GI_organs, aes(ZT, RelAbundance_norm, color = TissueType), size   = 3, stroke = NA) +
   scale_color_manual(values = GI_cols) +
-  scale_x_continuous(breaks = c(0,4,8,12,16,20,24), limits = c(0,24)) +
+  scale_x_continuous(breaks = c(0,4,8,12,16,20), limits = c(0,20)) +
   facet_wrap(~Metabolite, scales="free_y", ncol=4) +
   theme_bw() +
   theme(panel.grid = element_blank(), 
@@ -246,7 +249,7 @@ df_norm_distal_organ_plot <- ggplot() +
   geom_line(data = df_spline_norm_distal_organ, aes(ZT, RelAbundance_norm, color = TissueType, group = TissueType), linewidth = 1, alpha = 0.8) +
   geom_point(data = df_norm_distal_organ, aes(ZT, RelAbundance_norm, color = TissueType), size = 3, stroke = NA) +
   scale_color_manual(values = distal_organ_cols) +
-  scale_x_continuous(breaks = c(0,4,8,12,16,20,24), limits = c(0,24)) +
+  scale_x_continuous(breaks = c(0,4,8,12,16,20), limits = c(0,20)) +
   facet_wrap(~Metabolite, scales="free_y", ncol=4) +
   theme_bw() +
   theme(panel.grid = element_blank(), axis.line  = element_line(color="black"), legend.position="right", strip.text=element_text(size=12), axis.text=element_text(size=12),strip.background = element_blank())
@@ -257,7 +260,7 @@ df_norm_contents_plot <- ggplot() +
   geom_line(data = df_spline_norm_contents, aes(ZT, RelAbundance_norm, color = TissueType, group = TissueType), linewidth = 1, alpha     = 0.8) +
   geom_point(data = df_norm_contents, aes(ZT, RelAbundance_norm, color = TissueType), size   = 3, stroke = NA) +
   scale_color_manual(values = tissue_cols_contents) +
-  scale_x_continuous(breaks = c(0,4,8,12,16,20,24), limits = c(0,24)) +
+  scale_x_continuous(breaks = c(0,4,8,12,16,20), limits = c(0,20)) +
   facet_wrap(~Metabolite, scales="free_y", ncol=4) +
   theme_bw() +
   theme(panel.grid = element_blank(), axis.line  = element_line(color="black"), legend.position="right", strip.text=element_text(size=12), axis.text=element_text(size=12),strip.background = element_blank())
