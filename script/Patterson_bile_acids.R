@@ -12,10 +12,14 @@ library(mgcv)
 
 # import the table
 table_simplified <- read_csv("Erin_patterson_lab/All_ikoo_area_1_2024_11_11_16_54_24 (1).csv")
-table_simplified <- table_simplified |> 
-dplyr::rename(TissueType = `Tissue Type`) 
+BAs_to_remove <- read_csv("BA_to_remove_Patterson.csv")
+cols_to_remove <- BAs_to_remove$BA
 
-table_simplified_ext <- table_simplified |> 
+table_simplified_1 <- table_simplified |> 
+  dplyr::select(-any_of(cols_to_remove)) |> 
+  dplyr::rename(TissueType = `Tissue Type`) 
+
+table_simplified_ext <- table_simplified_1 |> 
   dplyr::select(-c(`Injection order`, `Sample Name...4`, `Sample Name...117`)) |>
   dplyr::mutate(ZT = as.numeric(ZT)) #|> 
   #bind_rows(table_simplified |> 
@@ -75,24 +79,86 @@ organ_bileacids_df_1 <-  organ_bileacids_df |>
 
 # define groups of bile acids
 
-free_bas <- c("deoxycholic acid_11114","deoxycholic acid_33153","cholic acid_14672","hyocholic acid_10971","hyocholic acid_10972","hyocholic acid_10973",
-  "hyocholic acid_10975","hyocholic acid_10976","hyocholic acid_34138",
-  "hyocholic acid_34139","hyocholic acid_34140","hyocholic acid_34141", "(R)-4-((3R,5S,7R,8R,9S,10S,12S,13R,14S,17R)-3,7,12-trihydroxy-10,13-dimethylhexadecahydro-1H-cyclopenta[a]phenanthren-17-yl)pentanoic acid_10974", "methyl (R)-4-((3R,5S,7R,8S,9S,10S,13R,14R,17R)-3,7,14-trihydroxy-10,13-dimethylhexadecahydro-1H-cyclopenta[a]phenanthren-17-yl)pentanoate_11881", "(4R)-4-((3R,5S,7S,9S,10S,12S,13R,14S,17R)-3,7,12-trihydroxy-10,13-dimethylhexadecahydro-1H-cyclopenta[a]phenanthren-17-yl)pentanoic acid_12154",
-  "methyl (4R)-4-((3R,5S,7R,9S,10S,13R,15R,17R)-3,7,15-trihydroxy-10,13-dimethylhexadecahydro-1H-cyclopenta[a]phenanthren-17-yl)pentanoate_15545","(4R)-4-((3R,5R,6S,7R,9S,10R,12S,13R,17R)-3,6,7,12-tetrahydroxy-10,13-dimethylhexadecahydro-1H-cyclopenta[a]phenanthren-17-yl)pentanoic acid_12021",
-  "(4R)-4-((3R,5R,6S,7R,9S,10R,12S,13R,17R)-3,6,7,12-tetrahydroxy-10,13-dimethylhexadecahydro-1H-cyclopenta[a]phenanthren-17-yl)pentanoic acid_12027")
+free_bas <- c(
+  "(4R)-4-((3R,5R,6S,7R,9S,10R,12S,13R,17R)-3,6,7,12-tetrahydroxy-10,13-dimethylhexadecahydro-1H-cyclopenta[a]phenanthren-17-yl)pentanoic acid_12021",
+  "(4R)-4-((3R,5R,6S,7R,9S,10R,12S,13R,17R)-3,6,7,12-tetrahydroxy-10,13-dimethylhexadecahydro-1H-cyclopenta[a]phenanthren-17-yl)pentanoic acid_12027",
+  "(4R)-4-((3R,5S,7S,9S,10S,12S,13R,14S,17R)-3,7,12-trihydroxy-10,13-dimethylhexadecahydro-1H-cyclopenta[a]phenanthren-17-yl)pentanoic acid_12154",
+  "(R)-4-((3R,5S,7R,8R,9S,10S,12S,13R,14S,17R)-3,7,12-trihydroxy-10,13-dimethylhexadecahydro-1H-cyclopenta[a]phenanthren-17-yl)pentanoic acid_10974",
+  "choloic acid [M-3H2O+H]+_9859",
+  "deoxycholic acid_33153",
+  "hyocholic acid_10971",
+  "hyocholic acid_10972",
+  "hyocholic acid_10973",
+  "hyocholic acid_10975",
+  "hyocholic acid_10976",
+  "hyocholic acid_34140",
+  "methyl (4R)-4-((3R,5S,7R,9S,10S,13R,15R,17R)-3,7,15-trihydroxy-10,13-dimethylhexadecahydro-1H-cyclopenta[a]phenanthren-17-yl)pentanoate_15545",
+  "methyl (R)-4-((3R,5S,7R,8S,9S,10S,13R,14R,17R)-3,7,14-trihydroxy-10,13-dimethylhexadecahydro-1H-cyclopenta[a]phenanthren-17-yl)pentanoate_11881"
+)
 
 aa_conj_cols <- c(
-  "Ala-CA_17790","Ala-bMCA_17791","Asn-CA_20646","Gln-CA_21582",
-  "His-CA_22165","Arg-CA_23368","Phe-CA_22812","Tyr-CA_23803",
-  "Trp-CA_25121","Ornithine-CA_20652", "Arg-DCA_22370", "Ser-CA_18843", 
-  "Val-CA_19625", "Thr-CA_19755", "Ile-Leu-CA_20580", "Ile-Leu-gMCA_20581", 
-  "Lys-CA_21586", "Lys-CA_21588", "Lys-bMCA_21589", "Lys-gMCA_21590", "Met-CA_21765", 
-  "Met-gMCA_21769", "Phe-bMCA_22813", "Arg-bMCA_23369", "Tyr-bMCA_23804", "Trp-bMCA_25122")
+  "Ala-bMCA_17791",
+  "Ala-CA_17790",
+  "Arg-bMCA_23369",
+  "Arg-CA_23368",
+  "Arg-DCA_22370",
+  "Asn-CA_20646",
+  "Gln-CA_21582",
+  "His-CA_22165",
+  "Ile-Leu-CA_20580",
+  "Ile-Leu-gMCA_20581",
+  "Lys-bMCA_21589",
+  "Lys-CA_21586",
+  "Lys-CA_21588",
+  "Lys-gMCA_21590",
+  "Met-CA_21765",
+  "Met-gMCA_21769",
+  "Ornithine-CA_20652",
+  "Phe-bMCA_22813",
+  "Phe-CA_22812",
+  "Ser-CA_18843",
+  "Thr-CA_19755",
+  "Trp-bMCA_25122",
+  "Trp-CA_25121",
+  "Tyr-bMCA_23804",
+  "Tyr-CA_23803",
+  "Val-CA_19625"
+)
 
-taurine <- c("taurocholic acid_16620", "taurocholic acid_16621", "taurocholic acid_16624", "taurocholic acid_16625","taurocholic acid_17776", "taurocholic acid_17778", "taurohyocholic acid_17780", "taurohyocholic acid_18975", "taurocholic acid_18976", "taurohyocholic acid_18977", "taurocholic acid_18978", "taurocholic acid_18979", "taurohyocholic acid_18980", "taurocholic acid_18981", "taurohyocholic acid_18983", "taurocholic acid_18984", "taurohyocholic acid_20152", "taurohyocholic acid_20153", "taurohyocholic acid_20154", "taurocholic acid_20155", "taurocholic acid_20157", "taurohyocholic acid_20159", "taurohyocholic acid_20160", "taurolithocholic acid_16902", "taurolithocholic acid_18046","taurohyodeoxycholic acid_16760", "taurohyodeoxycholic acid_16761", "taurohyodeoxycholic acid_16762", "taurohyodeoxycholic acid_16763", "taurohyodeoxycholic acid_16764","taurohyodeoxycholic acid_16765", "tauroursodeoxycholic acid_17906", "tauroursodeoxycholic acid_17907", "taurohyodeoxycholic acid_17908", "tauroursodeoxycholic acid_17909", "taurohyodeoxycholic acid_17910", "taurohyodeoxycholic acid_17912", "tauroursodeoxycholic acid_17913", "taurodeoxycholic acid_19107", "taurodeoxycholic acid_19109", "taurodeoxycholic acid_19110", "taurodeoxycholic acid_19111", "taurodeoxycholic acid_19112", "taurodeoxycholic acid_19113", "taurohyodeoxycholic acid_20550", "taurodeoxycholic acid_20555", "taurohyodeoxycholic acid_37537", "taurohyodeoxycholic acid_37538", "taurodeoxycholic acid_37539") 
 
-glycine <- c("glycocholic acid_14595", "glycocholic acid_14596", "glycohyocholic acid_15732", "glycocholic acid_15733",  "glycocholic acid_16904", "glycocholic acid_16907","glycochenodeoxycholic acid_15877", "glycochenodeoxycholic acid_15879", "glycochenodeoxycholic acid_15880")
+taurine <- c(
+  "taurocholic acid_16621",
+  "taurocholic acid_16624",
+  "taurocholic acid_17778",
+  "taurocholic acid_18976",
+  "taurocholic acid_18978",
+  "taurocholic acid_18979",
+  "taurocholic acid_18981",
+  "taurocholic acid_18984",
+  "taurocholic acid_20155",
+  "taurocholic acid_20157",
+  "taurodeoxycholic acid_19107",
+  "taurodeoxycholic acid_19109",
+  "taurohyocholic acid_18975",
+  "taurohyocholic acid_18980",
+  "taurohyocholic acid_20152",
+  "taurohyocholic acid_20153",
+  "taurohyocholic acid_20154",
+  "taurohyocholic acid_20160",
+  "taurohyodeoxycholic acid_16761",
+  "taurohyodeoxycholic acid_16765",
+  "taurolithocholic acid_18046",
+  "tauroursodeoxycholic acid_17907",
+  "tauroursodeoxycholic acid_17913"
+)
 
+glycine <- c(
+  "glycochenodeoxycholic acid_15877",
+  "glycochenodeoxycholic acid_15879",
+  "glycochenodeoxycholic acid_15880",
+  "glycocholic acid_16904",
+  "glycohyocholic acid_15732"
+)
 
 # assign each group to each bile acids
 organ_grouped <- organ_bileacids_df_1 |> 
@@ -345,7 +411,7 @@ df_upset <- df_aa_presence |>
   pivot_wider(
     names_from  = TissueType,
     values_from = Present,
-    values_fill = 0)              
+    values_fill = 0) |> dplyr::filter(if_any(all_of(tissue_cols), ~ . > 0))
 
 df_upset_contents <- df_aa_presence_contents |>
   pivot_wider(
@@ -357,7 +423,7 @@ tissue_cols <- setdiff(names(df_upset), "Bile_acid")
 tissue_cols_contents <- setdiff(names(df_upset_contents), "Bile_acid")
 
 # Create the UpSet plot
-upset_plot <- upset(
+upset_plot <- ComplexUpset::upset(
   df_upset,
   intersect        = tissue_cols,
   name             = "Tissue",
@@ -376,7 +442,7 @@ upset_plot <- upset(
 upset_plot
 
 
-upset_plot_contents <- upset(
+upset_plot_contents <- ComplexUpset::upset(
   df_upset_contents,
   intersect        = tissue_cols_contents,
   name             = "Tissue",
@@ -414,38 +480,38 @@ ggsave(
 
 
 
-# Explore intersections
+ #Explore intersections
 # 1) rebuild your bile_intersections if needed:
-#bile_intersections <- df_upset_contents |>
-#  pivot_longer(
-#    cols     = -Bile_acid,
-#    names_to = "Tissue",
-#    values_to= "Present"
-#  ) |>
-#  filter(Present == 1) |>
-#  group_by(Bile_acid) |>
-#  summarise(
-#   Intersection = paste(sort(Tissue), collapse = "|"),
-#    .groups     = "drop"
-#  ) |>
-#  group_by(Intersection) |>
-#  summarise(
-#    Bile_Acids  = list(Bile_acid),
-#    Count_Acids = n(),
-#    .groups     = "drop"
-#  )
+bile_intersections <- df_upset |>
+  pivot_longer(
+    cols     = -Bile_acid,
+    names_to = "Tissue",
+    values_to= "Present"
+  ) |>
+  filter(Present == 1) |>
+  group_by(Bile_acid) |>
+  summarise(
+   Intersection = paste(sort(Tissue), collapse = "|"),
+    .groups     = "drop"
+  ) |>
+  group_by(Intersection) |>
+  summarise(
+    Bile_Acids  = list(Bile_acid),
+    Count_Acids = n(),
+    .groups     = "drop"
+  )
 
-#bile_intersections_ordered <- bile_intersections |>
-#  arrange(
-#    desc(Count_Acids),
-#    Intersection
-#  ) |>
-#  mutate(
-#    bar_number = row_number()
-#  )
-#
+bile_intersections_ordered <- bile_intersections |>
+  arrange(
+    desc(Count_Acids),
+    Intersection
+  ) |>
+  mutate(
+    bar_number = row_number()
+  )
+
 # 3) inspect the mapping of bar → intersection → acids
-#bile_intersections_ordered |> 
-#  select(bar_number, Intersection, Count_Acids, Bile_Acids) |>
-#  print(n = Inf)
+bile_intersections_ordered |> 
+  select(bar_number, Intersection, Count_Acids, Bile_Acids) |>
+  print(n = Inf)
 
